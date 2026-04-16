@@ -9,7 +9,7 @@ import (
 	"runtime/debug"
 	"sync"
 
-	"github.com/tailscale/wireguard-go/tun"
+	"github.com/amnezia-vpn/amneziawg-go/tun"
 	"tailscale.com/syncs"
 )
 
