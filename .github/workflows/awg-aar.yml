@@ -1,0 +1,82 @@
+name: awg-aar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/awg-aar.yml'
+      - 'go.mod'
+      - 'go.sum'
+      - 'libtailscale/**'
+      - 'Makefile'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-aar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tailscale-android
+          fetch-depth: 1
+
+      - name: Clone sibling forks for go.mod replace directives
+        run: |
+          git clone --depth=1 https://github.com/benavex/amneziawg-go.git amneziawg-go
+          git clone --depth=1 https://github.com/benavex/tailscale.git tailscale
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tailscale-android/go.mod
+          cache: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: go mod tidy
+        working-directory: tailscale-android
+        run: go mod tidy
+
+      - name: Build libtailscale AAR
+        working-directory: tailscale-android
+        run: |
+          set -x
+          make libtailscale.aar || {
+            echo "::warning::libtailscale.aar failed; attempting APK build for diagnostics"
+            exit 1
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libtailscale-aar
+          path: tailscale-android/android/libs/libtailscale*.aar
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: build-aar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - run: ls -la artifacts/
+
+      - name: Rolling release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: awg-latest
+        run: |
+          gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "AWG Android AAR (rolling)" \
+            --notes "libtailscale.aar built with amneziawg-go engine. Commit ${{ github.sha }}." \
+            artifacts/*
