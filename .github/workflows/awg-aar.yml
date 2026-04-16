@@ -46,10 +46,7 @@ jobs:
         working-directory: tailscale-android
         run: |
           set -x
-          make libtailscale.aar || {
-            echo "::warning::libtailscale.aar failed; attempting APK build for diagnostics"
-            exit 1
-          }
+          make libtailscale
 
       - uses: actions/upload-artifact@v4
         with:
