@@ -8,6 +8,7 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'libtailscale/**'
+      - 'android/**'
       - 'Makefile'
   workflow_dispatch:
 
@@ -15,7 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  build-aar:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +39,20 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Install Android SDK + NDK
+        working-directory: tailscale-android
+        run: |
+          set -x
+          # Use the runner's pre-provisioned ANDROID_SDK_ROOT, which already has
+          # cmdline-tools/latest, so the Makefile's androidsdk target only needs
+          # to add the platforms / build-tools / NDK we depend on.
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}"
+          ls "${ANDROID_SDK_ROOT}" || true
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" \
+            'platforms;android-34' 'extras;android;m2repository' \
+            'ndk;23.1.7779620' 'platform-tools' 'build-tools;34.0.0'
+
       - name: go mod tidy
         working-directory: tailscale-android
         run: go mod tidy
@@ -48,15 +63,32 @@ jobs:
           set -x
           make libtailscale
 
+      - name: Build debug APK (arm64-v8a included)
+        working-directory: tailscale-android
+        run: |
+          set -x
+          make tailscale-debug
+
+      - name: Stage release artifacts
+        working-directory: tailscale-android
+        run: |
+          set -x
+          mkdir -p dist
+          cp android/libs/libtailscale.aar            dist/libtailscale.aar
+          cp android/libs/libtailscale_unstripped.aar dist/libtailscale_unstripped.aar
+          cp tailscale-debug.apk                       dist/tailscale-debug.apk
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          ls -la dist/
+
       - uses: actions/upload-artifact@v4
         with:
-          name: libtailscale-aar
-          path: tailscale-android/android/libs/libtailscale*.aar
+          name: tailscale-android-awg
+          path: tailscale-android/dist/*
           if-no-files-found: error
           retention-days: 14
 
   release:
-    needs: build-aar
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -74,6 +106,6 @@ jobs:
           gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "AWG Android AAR (rolling)" \
-            --notes "libtailscale.aar built with amneziawg-go engine. Commit ${{ github.sha }}." \
+            --title "AWG Android (rolling)" \
+            --notes "Debug APK + libtailscale AAR built with the benavex amneziawg-go engine and benavex tailscale fork. Commit ${{ github.sha }}. APK is universal (contains arm64-v8a, armeabi-v7a, x86_64)." \
             artifacts/*
