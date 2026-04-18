@@ -70,6 +70,7 @@ import com.tailscale.ipn.ui.view.DNSSettingsView
 import com.tailscale.ipn.ui.view.ExitNodePicker
 import com.tailscale.ipn.ui.view.HealthView
 import com.tailscale.ipn.ui.view.IntroView
+import com.tailscale.ipn.ui.view.WelcomeView
 import com.tailscale.ipn.ui.view.LoginQRView
 import com.tailscale.ipn.ui.view.LoginWithAuthKeyView
 import com.tailscale.ipn.ui.view.LoginWithCustomControlURLView
@@ -297,7 +298,8 @@ class MainActivity : ComponentActivity() {
                           onNavigateToSearch = {
                             viewModel.enableSearchAutoFocus()
                             navController.navigate("search")
-                          })
+                          },
+                          onNavigateToWelcome = { navController.navigate("welcome") })
                   val settingsNav =
                       SettingsNav(
                           onNavigateToBugReport = { navController.navigate("bugReport") },
@@ -393,7 +395,13 @@ class MainActivity : ComponentActivity() {
                     NotificationsView(backTo("permissions"), ::openApplicationSettings)
                   }
                   composable("intro", exitTransition = { fadeOut(animationSpec = tween(150)) }) {
-                    IntroView(backTo("main"))
+                    // Forward the upstream "intro" route to our welcome flow so the standard
+                    // first-launch redirect lands on the three-field setup screen instead of
+                    // the original Tailscale-branded splash.
+                    WelcomeView(onNavigateHome = backTo("main"))
+                  }
+                  composable("welcome", exitTransition = { fadeOut(animationSpec = tween(150)) }) {
+                    WelcomeView(onNavigateHome = backTo("main"))
                   }
                   composable("loginWithAuthKey") {
                     LoginWithAuthKeyView(onNavigateHome = backTo("main"), backTo("userSwitcher"))

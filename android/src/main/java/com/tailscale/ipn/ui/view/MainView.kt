@@ -121,6 +121,7 @@ data class MainViewNavigation(
     val onNavigateToExitNodes: () -> Unit,
     val onNavigateToHealth: () -> Unit,
     val onNavigateToSearch: () -> Unit,
+    val onNavigateToWelcome: () -> Unit,
 )
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -240,7 +241,9 @@ fun MainView(
                     state != Ipn.State.Stopping,
                     user,
                     { viewModel.toggleVpn(desiredState = !isOn) },
-                    { viewModel.login() },
+                    // Send the "Log in" button to the benavex welcome flow instead of the upstream
+                    // tailscale.com OIDC default — we never want to silently fall through to it.
+                    { navigation.onNavigateToWelcome() },
                     loginAtUrl,
                     netmap?.SelfNode,
                     { viewModel.showVPNPermissionLauncherIfUnauthorized() })
@@ -827,7 +830,8 @@ fun MainViewPreview() {
           onNavigateToPeerDetails = {},
           onNavigateToExitNodes = {},
           onNavigateToHealth = {},
-          onNavigateToSearch = {}),
+          onNavigateToSearch = {},
+          onNavigateToWelcome = {}),
       vm,
       appViewModel)
 }

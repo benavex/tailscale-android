@@ -49,7 +49,14 @@ private object Endpoint {
   const val FILE_PUT = "file-put"
   const val TAILFS_SERVER_ADDRESS = "tailfs/fileserver-address"
   const val ENABLE_EXIT_NODE = "set-use-exit-node-enabled"
+  const val CLUSTER_PIN = "cluster-pin"
 }
+
+@kotlinx.serialization.Serializable
+data class ClusterPinRequest(val bootstrap_url: String, val verifier: String)
+
+@kotlinx.serialization.Serializable
+data class ClusterPinResponse(val verifier: String, val cluster_pub: String)
 
 typealias StatusResponseHandler = (Result<IpnState.Status>) -> Unit
 
@@ -74,6 +81,21 @@ class Client(private val scope: CoroutineScope) {
   fun start(options: Ipn.Options, responseHandler: (Result<Unit>) -> Unit) {
     val body = Json.encodeToString(options).toByteArray()
     return post(Endpoint.START, body, responseHandler = responseHandler)
+  }
+
+  // First-contact cluster pin. POSTs {bootstrap_url, verifier} to the
+  // local daemon, which fetches /mesh/identity, validates the verifier
+  // against SHA-256(cluster_pub) and the ed25519 signature over the
+  // server's noise pubkey, then persists the pin at varRoot/clusterpin.json.
+  fun clusterPin(
+      bootstrapURL: String,
+      verifier: String,
+      responseHandler: (Result<ClusterPinResponse>) -> Unit
+  ) {
+    val body =
+        Json.encodeToString(ClusterPinRequest(bootstrap_url = bootstrapURL, verifier = verifier))
+            .toByteArray()
+    return post(Endpoint.CLUSTER_PIN, body, responseHandler = responseHandler)
   }
 
   fun status(responseHandler: StatusResponseHandler) {

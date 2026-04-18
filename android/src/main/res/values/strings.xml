@@ -134,6 +134,21 @@
     <string name="auth_key_placeholder">ie: tskey-auth-mYta1ln3tCNTRL-s3cr3tauthk3yFr0madM1n</string>
     <string name="invalidAuthKey">The provided auth key is not in the correct format.</string>
     <string name="invalidAuthKeyTitle">Invalid key</string>
+    <string name="invalid_verifier">The verifier must be exactly 8 characters (the operator prints it via `headscale mesh verifier`).</string>
+    <string name="invalid_verifier_title">Invalid verifier</string>
+    <string name="pin_failed">First-contact pin failed. Either the verifier you entered does not match the server\'s cluster identity, or the server is unreachable. Refusing to pin.</string>
+    <string name="pin_failed_title">Cluster pin failed</string>
+    <string name="welcome_setup_title">Set up your mesh</string>
+    <string name="welcome_setup_subtitle">Paste the three values your operator gave you. Done once per device.</string>
+    <string name="welcome_field_url">Bootstrap URL</string>
+    <string name="welcome_placeholder_url" translatable="false">https://hs42.duckdns.org</string>
+    <string name="welcome_field_verifier">Verifier (8 chars)</string>
+    <string name="welcome_placeholder_verifier" translatable="false">ABC23XYZ</string>
+    <string name="welcome_help_verifier">Operator runs `headscale mesh verifier` to print this. Same on every server.</string>
+    <string name="welcome_field_authkey">Preauth key</string>
+    <string name="welcome_placeholder_authkey" translatable="false">hskey-auth-…</string>
+    <string name="welcome_submit">Pin and join</string>
+    <string name="welcome_submit_busy">Pinning…</string>
     <string name="custom_control_url_title">Custom control server URL</string>
     <string name="auth_key_input_title">Auth key</string>
     <string name="delete_tailnet">Delete tailnet</string>
