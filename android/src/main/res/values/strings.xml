@@ -149,6 +149,9 @@
     <string name="welcome_placeholder_authkey" translatable="false">hskey-auth-…</string>
     <string name="welcome_submit">Pin and join</string>
     <string name="welcome_submit_busy">Pinning…</string>
+    <string name="welcome_follow_crown_title">Follow crown for exit node</string>
+    <string name="welcome_follow_crown_help">Route internet through whichever cluster server is currently elected.</string>
+    <string name="welcome_connecting">Connecting to your mesh…</string>
     <string name="custom_control_url_title">Custom control server URL</string>
     <string name="auth_key_input_title">Auth key</string>
     <string name="delete_tailnet">Delete tailnet</string>

@@ -71,6 +71,11 @@ class Ipn {
       var HostName: String = "",
       var AutoUpdate: AutoUpdatePrefs? = AutoUpdatePrefs(true, true),
       var InternalExitNodePrior: String? = null,
+      // benavex fork: auto-exit-node expression. "follow-crown" tracks
+      // whichever sibling headscale is currently elected crown; the
+      // daemon resolves this to a concrete ExitNodeID at every netmap
+      // update. Empty means no auto policy.
+      var AutoExitNode: String = "",
   ) {
 
     // For the InternalExitNodePrior and ExitNodeId, these will treats the empty string as null to
@@ -100,6 +105,7 @@ class Ipn {
       var AdvertiseRoutesSet: Boolean? = null,
       var ForceDaemonSet: Boolean? = null,
       var HostnameSet: Boolean? = null,
+      var AutoExitNodeSet: Boolean? = null,
   ) {
 
     var ControlURL: String? = null
@@ -166,6 +172,12 @@ class Ipn {
       set(value) {
         field = value
         HostnameSet = true
+      }
+
+    var AutoExitNode: String? = null
+      set(value) {
+        field = value
+        AutoExitNodeSet = true
       }
   }
 
@@ -253,5 +265,6 @@ fun Ipn.MaskedPrefs.deepCopy(): Ipn.MaskedPrefs {
     if (this.AdvertiseRoutesSet == true) it.AdvertiseRoutes = this.AdvertiseRoutes
     if (this.ForceDaemonSet == true) it.ForceDaemon = this.ForceDaemon
     if (this.HostnameSet == true) it.Hostname = this.Hostname
+    if (this.AutoExitNodeSet == true) it.AutoExitNode = this.AutoExitNode
   }
 }

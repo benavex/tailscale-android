@@ -27,7 +27,13 @@ class WelcomeViewModel : IpnViewModel() {
   // True while the chain (pin → editPrefs → start → loginInteractive) is in flight.
   val busy: StateFlow<Boolean> = MutableStateFlow(false)
 
-  fun submit(url: String, verifier: String, authKey: String, onSuccess: () -> Unit) {
+  fun submit(
+      url: String,
+      verifier: String,
+      authKey: String,
+      followCrown: Boolean,
+      onSuccess: () -> Unit,
+  ) {
     val u = url.trim()
     val v = verifier.trim().uppercase()
     val k = authKey.trim()
@@ -55,9 +61,15 @@ class WelcomeViewModel : IpnViewModel() {
             errorDialog.set(ErrorDialogType.PIN_FAILED)
           }
           .onSuccess {
-            // Pin persisted. Now set ControlURL + register with auth key in one shot.
+            // Pin persisted. Now set ControlURL + AutoExitNode + register
+            // with auth key in one shot. Follow-crown is the default for
+            // the mesh use case so the user's exit node tracks whichever
+            // sibling is currently elected crown.
             val prefs = Ipn.MaskedPrefs()
             prefs.ControlURL = u
+            if (followCrown) {
+              prefs.AutoExitNode = "follow-crown"
+            }
             login(prefs, authKey = k) { loginResult ->
               busy.set(false)
               loginResult

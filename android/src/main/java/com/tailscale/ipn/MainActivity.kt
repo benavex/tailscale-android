@@ -428,10 +428,23 @@ class MainActivity : ComponentActivity() {
 
   init {
     // Watch the model's browseToURL and launch the browser when it changes or
-    // pop up a QR code to scan
+    // pop up a QR code to scan.
+    //
+    // Filter: on the benavex fork the operator pins a specific ControlURL via
+    // WelcomeView; if the daemon ever emits a browseToURL pointing at a
+    // different host (typically tailscale.com / login.tailscale.com — a
+    // residue of upstream OIDC fallback paths), we ignore it. Without this,
+    // tabbing out of WelcomeView and back used to bounce the app to the
+    // upstream Tailscale login page even though the user had already pinned
+    // a cluster headscale.
     lifecycleScope.launch {
       Notifier.browseToURL.collect { url ->
         url?.let {
+          if (!isUrlForCurrentControlServer(it)) {
+            TSLog.d(TAG, "browseToURL suppressed (host doesn't match pinned ControlURL): $it")
+            Notifier.browseToURL.set(null)
+            return@let
+          }
           when (useQRCodeLogin()) {
             false -> Dispatchers.Main.run { login(it) }
             true -> loginQRCode.set(it)
@@ -441,6 +454,21 @@ class MainActivity : ComponentActivity() {
     }
     // Once we see a loginFinished event, clear the QR code which will dismiss the QR dialog.
     lifecycleScope.launch { Notifier.loginFinished.collect { _ -> loginQRCode.set(null) } }
+  }
+
+  // isUrlForCurrentControlServer returns true when urlString's host matches
+  // the host in the daemon's currently-pinned ControlURL. Returns true when
+  // ControlURL is unset (initial pre-pin state — accept anything so the
+  // first-launch flow still works) and false when parsing fails.
+  private fun isUrlForCurrentControlServer(urlString: String): Boolean {
+    val pinned = Notifier.prefs.value?.ControlURL?.takeIf { it.isNotEmpty() } ?: return true
+    return try {
+      val pinnedHost = pinned.toUri().host ?: return true
+      val urlHost = urlString.toUri().host ?: return false
+      urlHost.equals(pinnedHost, ignoreCase = true)
+    } catch (_: Exception) {
+      false
+    }
   }
 
   private fun showOtherVPNConflictDialog() {
