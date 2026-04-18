@@ -525,6 +525,12 @@ fun ConnectView(
                 fontSize = MaterialTheme.typography.titleMedium.fontSize)
           }
         } else {
+          // benavex fork: never show the upstream "Log in" pane. The
+          // operator-pinned welcome flow is the only authorised entry
+          // point. Auto-route to welcome on first composition; loginAction
+          // already navigates there if the user taps the (briefly visible)
+          // button before the LaunchedEffect fires.
+          LaunchedEffect(Unit) { loginAction() }
           TailscaleLogoView(modifier = Modifier.size(50.dp))
           Spacer(modifier = Modifier.size(1.dp))
           Text(
