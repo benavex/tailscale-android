@@ -3,6 +3,7 @@
 
 package com.tailscale.ipn.ui.viewModel
 
+import androidx.lifecycle.viewModelScope
 import com.tailscale.ipn.ui.localapi.Client
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.util.set
