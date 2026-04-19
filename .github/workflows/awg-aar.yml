@@ -120,12 +120,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: awg-latest
           VERSION_CODE: ${{ needs.build.outputs.versionCode }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
+          # Build the release notes with printf so we keep the embedded
+          # newlines without confusing YAML's literal-block parser (a
+          # blank line at column 0 inside `run: |` terminates the scalar).
+          NOTES=$(printf 'versionCode=%s\n\nDebug APK + libtailscale AAR built with the benavex amneziawg-go engine and benavex tailscale fork. Commit %s. APK is universal (contains arm64-v8a, armeabi-v7a, x86_64).\n' "$VERSION_CODE" "$COMMIT_SHA")
           gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --title "AWG Android v$VERSION_CODE (rolling)" \
-            --notes "versionCode=$VERSION_CODE
-
-Debug APK + libtailscale AAR built with the benavex amneziawg-go engine and benavex tailscale fork. Commit ${{ github.sha }}. APK is universal (contains arm64-v8a, armeabi-v7a, x86_64)." \
+            --notes "$NOTES" \
             artifacts/*
