@@ -63,10 +63,23 @@ jobs:
           set -x
           make libtailscale
 
-      - name: Build debug APK (arm64-v8a included)
+      - name: Compute versionCode from git history
+        id: vcode
         working-directory: tailscale-android
         run: |
+          # Offset past the upstream baseline (468) so our rolling builds
+          # always outrank anything older installed from upstream releases.
+          BASE=10000
+          COUNT=$(git rev-list --count HEAD)
+          echo "code=$((BASE + COUNT))" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK (arm64-v8a included)
+        working-directory: tailscale-android
+        env:
+          VERSION_CODE: ${{ steps.vcode.outputs.code }}
+        run: |
           set -x
+          echo "building with versionCode=$VERSION_CODE"
           make tailscale-debug
 
       - name: Stage release artifacts
