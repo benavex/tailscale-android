@@ -34,13 +34,16 @@ apply plugin: 'com.ncorti.ktfmt.gradle'
 android {
     ndkVersion "23.1.7779620"
     compileSdkVersion 34
+    // versionCode monotonically advances per CI build so phones can
+    // update in place. CI sets VERSION_CODE from `git rev-list --count
+    // HEAD`; local builds fall back to the upstream-tracked baseline.
+    def envVersionCode = System.getenv("VERSION_CODE")
+    def buildVersionCode = envVersionCode != null && !envVersionCode.isEmpty() ? envVersionCode.toInteger() : 468
+
     defaultConfig {
         minSdkVersion 26
         targetSdkVersion 35
-        // versionCode monotonically advances per CI build so phones can
-        // update in place. CI sets VERSION_CODE from `git rev-list --count
-        // HEAD`; local builds fall back to the upstream-tracked baseline.
-        versionCode (System.getenv("VERSION_CODE") ?: "468").toInteger()
+        versionCode buildVersionCode
         versionName getVersionProperty("VERSION_LONG")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
