@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -35,13 +36,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.R
+import com.tailscale.ipn.ui.model.MeshInvite
 import com.tailscale.ipn.ui.util.set
 import com.tailscale.ipn.ui.viewModel.WelcomeViewModel
 
 /**
- * One-screen first-launch flow for the benavex fork. Three fields, one button: bootstrap URL,
- * verifier, preauth key. Replaces the upstream IntroView so the user never lands on the default
- * tailscale.com sign-in path.
+ * One-screen first-launch flow. Single paste field + button: the operator mints one vpn:// invite
+ * string on the server (`headscale mesh user-invite …`), the user pastes it here, and the field
+ * tolerates whatever whitespace/line-wrapping the terminal mangled the blob with on the way over.
  */
 @Composable
 fun WelcomeView(
@@ -51,146 +53,126 @@ fun WelcomeView(
   val error by viewModel.errorDialog.collectAsState()
   val busy by viewModel.busy.collectAsState()
 
-  var url by remember { mutableStateOf("") }
-  var verifier by remember { mutableStateOf("") }
-  var authKey by remember { mutableStateOf("") }
+  var invite by remember { mutableStateOf("") }
   var followCrown by remember { mutableStateOf(true) }
 
   error?.let { ErrorDialog(type = it, action = { viewModel.errorDialog.set(null) }) }
 
- Box(modifier = Modifier.fillMaxSize()) {
-  Column(
-      modifier = Modifier.fillMaxHeight().fillMaxWidth().verticalScroll(rememberScrollState()),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Top,
-  ) {
-    Spacer(modifier = Modifier.height(60.dp))
-    TailscaleLogoView(modifier = Modifier.width(60.dp).height(60.dp))
-    Spacer(modifier = Modifier.height(24.dp))
-    Text(
-        text = stringResource(R.string.welcome_setup_title),
-        style = MaterialTheme.typography.titleLarge,
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        modifier = Modifier.padding(horizontal = 32.dp),
-        text = stringResource(R.string.welcome_setup_subtitle),
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    Spacer(modifier = Modifier.height(32.dp))
-
+  Box(modifier = Modifier.fillMaxSize()) {
     Column(
-        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxHeight().fillMaxWidth().verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
     ) {
-      OutlinedTextField(
-          modifier = Modifier.fillMaxWidth(),
-          value = url,
-          onValueChange = { url = it },
-          singleLine = true,
-          enabled = !busy,
-          label = { Text(stringResource(R.string.welcome_field_url)) },
-          placeholder = { Text(stringResource(R.string.welcome_placeholder_url)) },
-          keyboardOptions =
-              KeyboardOptions(
-                  capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Next),
+      Spacer(modifier = Modifier.height(60.dp))
+      TailscaleLogoView(modifier = Modifier.width(60.dp).height(60.dp))
+      Spacer(modifier = Modifier.height(24.dp))
+      Text(
+          text = stringResource(R.string.welcome_setup_title),
+          style = MaterialTheme.typography.titleLarge,
       )
-      OutlinedTextField(
-          modifier = Modifier.fillMaxWidth(),
-          value = verifier,
-          onValueChange = { verifier = it.uppercase().take(8) },
-          singleLine = true,
-          enabled = !busy,
-          label = { Text(stringResource(R.string.welcome_field_verifier)) },
-          placeholder = { Text(stringResource(R.string.welcome_placeholder_verifier)) },
-          supportingText = { Text(stringResource(R.string.welcome_help_verifier)) },
-          keyboardOptions =
-              KeyboardOptions(
-                  capitalization = KeyboardCapitalization.Characters,
-                  imeAction = ImeAction.Next),
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+          modifier = Modifier.padding(horizontal = 32.dp),
+          text = stringResource(R.string.welcome_setup_subtitle),
+          style = MaterialTheme.typography.bodyMedium,
       )
-      OutlinedTextField(
-          modifier = Modifier.fillMaxWidth(),
-          value = authKey,
-          onValueChange = { authKey = it },
-          singleLine = true,
-          enabled = !busy,
-          label = { Text(stringResource(R.string.welcome_field_authkey)) },
-          placeholder = { Text(stringResource(R.string.welcome_placeholder_authkey)) },
-          keyboardOptions =
-              KeyboardOptions(
-                  capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done),
-      )
-    }
+      Spacer(modifier = Modifier.height(32.dp))
 
-    Spacer(modifier = Modifier.height(16.dp))
-    // Follow-crown toggle (§3c). When on, the daemon's exit-node tracks
-    // whichever sibling is currently elected crown — see
-    // tailscale `--exit-node=auto:follow-crown`. Off is "no auto exit
-    // node"; the user can pick one manually from settings.
-    Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth()) {
-      androidx.compose.foundation.layout.Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically,
+      Column(
+          modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+          verticalArrangement = Arrangement.spacedBy(12.dp),
       ) {
-        Column(modifier = Modifier.padding(end = 12.dp)) {
-          Text(
-              text = stringResource(R.string.welcome_follow_crown_title),
-              style = MaterialTheme.typography.bodyLarge,
-          )
-          Text(
-              text = stringResource(R.string.welcome_follow_crown_help),
-              style = MaterialTheme.typography.bodySmall,
+        OutlinedTextField(
+            // Multi-line so the pasted blob doesn't get visually
+            // truncated, and so soft-keyboards with paste buttons don't
+            // trim trailing content. The parser strips whitespace at
+            // submit time regardless.
+            modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
+            value = invite,
+            onValueChange = { invite = it },
+            singleLine = false,
+            maxLines = 8,
+            enabled = !busy,
+            label = { Text(stringResource(R.string.welcome_field_invite)) },
+            placeholder = { Text(stringResource(R.string.welcome_placeholder_invite)) },
+            supportingText = { Text(stringResource(R.string.welcome_help_invite)) },
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Default),
+        )
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+      Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth()) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Column(modifier = Modifier.padding(end = 12.dp)) {
+            Text(
+                text = stringResource(R.string.welcome_follow_crown_title),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = stringResource(R.string.welcome_follow_crown_help),
+                style = MaterialTheme.typography.bodySmall,
+            )
+          }
+          Switch(
+              checked = followCrown,
+              onCheckedChange = { followCrown = it },
+              enabled = !busy,
           )
         }
-        Switch(
-            checked = followCrown,
-            onCheckedChange = { followCrown = it },
-            enabled = !busy,
-        )
       }
-    }
-    Spacer(modifier = Modifier.height(24.dp))
-    Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth()) {
-      PrimaryActionButton(
-          onClick = {
-            viewModel.submit(url, verifier, authKey, followCrown, onSuccess = onNavigateHome)
-          },
-      ) {
-        Text(
-            text =
-                stringResource(
-                    if (busy) R.string.welcome_submit_busy else R.string.welcome_submit),
-            fontSize = MaterialTheme.typography.titleMedium.fontSize,
-        )
+      Spacer(modifier = Modifier.height(24.dp))
+      Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth()) {
+        PrimaryActionButton(
+            onClick = {
+              MeshInvite.parse(invite).fold(
+                  onSuccess = { inv ->
+                    viewModel.submit(
+                        url = inv.url,
+                        verifier = inv.verifier,
+                        authKey = inv.authKey,
+                        followCrown = followCrown,
+                        onSuccess = onNavigateHome,
+                    )
+                  },
+                  onFailure = { viewModel.errorDialog.set(ErrorDialogType.INVALID_INVITE) },
+              )
+            },
+        ) {
+          Text(
+              text =
+                  stringResource(
+                      if (busy) R.string.welcome_submit_busy else R.string.welcome_submit),
+              fontSize = MaterialTheme.typography.titleMedium.fontSize,
+          )
+        }
       }
+      Spacer(modifier = Modifier.height(40.dp))
     }
-    Spacer(modifier = Modifier.height(40.dp))
-  }
 
-  // Connecting overlay (§3b). The user-visible signal that submit is
-  // in flight: a translucent scrim plus a centered spinner with the
-  // URL we're trying to reach. Without this, submit looked silent —
-  // the only feedback was the button text changing one line, easy to
-  // miss when the keyboard hid the button.
-  if (busy) {
-    Box(
-        modifier =
-            Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.55f)),
-        contentAlignment = Alignment.Center,
-    ) {
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        CircularProgressIndicator()
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.welcome_connecting),
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+    if (busy) {
+      Box(
+          modifier =
+              Modifier.fillMaxSize()
+                  .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.55f)),
+          contentAlignment = Alignment.Center,
+      ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          CircularProgressIndicator()
+          Spacer(modifier = Modifier.height(16.dp))
+          Text(
+              text = stringResource(R.string.welcome_connecting),
+              color = MaterialTheme.colorScheme.onPrimary,
+              style = MaterialTheme.typography.bodyLarge,
+          )
+        }
       }
     }
   }
- }
 }

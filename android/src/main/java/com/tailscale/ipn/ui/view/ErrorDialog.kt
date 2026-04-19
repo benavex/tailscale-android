@@ -21,6 +21,7 @@ enum class ErrorDialogType {
   SHARE_FAILED,
   INVALID_AUTH_KEY,
   INVALID_VERIFIER,
+  INVALID_INVITE,
   PIN_FAILED;
 
   val message: Int
@@ -34,6 +35,7 @@ enum class ErrorDialogType {
         SHARE_FAILED -> R.string.taildrop_share_failed
         INVALID_AUTH_KEY -> R.string.invalidAuthKey
         INVALID_VERIFIER -> R.string.invalid_verifier
+        INVALID_INVITE -> R.string.welcome_invite_invalid
         PIN_FAILED -> R.string.pin_failed
       }
     }
@@ -49,6 +51,7 @@ enum class ErrorDialogType {
         SHARE_FAILED -> R.string.taildrop_share_failed_title
         INVALID_AUTH_KEY -> R.string.invalidAuthKeyTitle
         INVALID_VERIFIER -> R.string.invalid_verifier_title
+        INVALID_INVITE -> R.string.welcome_setup_title
         PIN_FAILED -> R.string.pin_failed_title
       }
     }

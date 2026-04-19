@@ -18,11 +18,11 @@ import kotlinx.coroutines.launch
 /**
  * Drives the one-screen welcome flow used by the benavex fork.
  *
- * The user pastes three pieces of information from the cluster operator: bootstrap URL, 8-character
- * verifier (cluster identity hash), and a preauth key. submit() chains them through the local
- * daemon: cluster-pin first, then editPrefs(ControlURL=...) + start(AuthKey=...) — so the user
- * never has to bounce through the gear → accounts → 3-dots menus, and never has the chance to fall
- * through to the default tailscale.com login.
+ * The WelcomeView parses the operator's single vpn:// invite string (MeshInvite.parse) and hands
+ * this VM the decomposed fields — bootstrap URL, 8-char verifier, pre-auth key. submit() chains
+ * them through the local daemon: cluster-pin first, then editPrefs(ControlURL=...) +
+ * start(AuthKey=...) — so the user never has to bounce through the gear → accounts → 3-dots menus,
+ * and never has the chance to fall through to the default tailscale.com login.
  */
 class WelcomeViewModel : IpnViewModel() {
   val errorDialog: StateFlow<ErrorDialogType?> = MutableStateFlow(null)

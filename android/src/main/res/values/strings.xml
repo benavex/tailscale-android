@@ -176,16 +176,13 @@
     <string name="pin_failed">First-contact pin failed. Either the verifier you entered does not match the server\'s cluster identity, or the server is unreachable. Refusing to pin.</string>
     <string name="pin_failed_title">Cluster pin failed</string>
     <string name="welcome_setup_title">Set up your mesh</string>
-    <string name="welcome_setup_subtitle">Paste the three values your operator gave you. Done once per device.</string>
-    <string name="welcome_field_url">Bootstrap URL</string>
-    <string name="welcome_placeholder_url" translatable="false">https://hs42.duckdns.org</string>
-    <string name="welcome_field_verifier">Verifier (8 chars)</string>
-    <string name="welcome_placeholder_verifier" translatable="false">ABC23XYZ</string>
-    <string name="welcome_help_verifier">Operator runs `headscale mesh verifier` to print this. Same on every server.</string>
-    <string name="welcome_field_authkey">Preauth key</string>
-    <string name="welcome_placeholder_authkey" translatable="false">hskey-auth-…</string>
-    <string name="welcome_submit">Pin and join</string>
-    <string name="welcome_submit_busy">Pinning…</string>
+    <string name="welcome_setup_subtitle">Paste the invite string your operator gave you. Spaces and line breaks are OK — it\'ll clean them up.</string>
+    <string name="welcome_field_invite">Invite</string>
+    <string name="welcome_placeholder_invite" translatable="false">vpn://…</string>
+    <string name="welcome_help_invite">One blob containing URL, verifier, and auth key. Operator runs `headscale mesh user-invite` to mint it.</string>
+    <string name="welcome_submit">Join mesh</string>
+    <string name="welcome_submit_busy">Joining…</string>
+    <string name="welcome_invite_invalid">Couldn\'t read that invite. Make sure you pasted the whole thing (starts with vpn://).</string>
     <string name="welcome_follow_crown_title">Follow crown for exit node</string>
     <string name="welcome_follow_crown_help">Route internet through whichever cluster server is currently elected.</string>
     <string name="welcome_connecting">Connecting to your mesh…</string>
