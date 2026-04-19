@@ -27,6 +27,12 @@ import kotlinx.coroutines.launch
 class WelcomeViewModel : IpnViewModel() {
   val errorDialog: StateFlow<ErrorDialogType?> = MutableStateFlow(null)
 
+  // benavex fork: raw error message from the failing step. The dialog
+  // shows `<title>\n<message>\n\n<errorDetail>` so we don't hide the
+  // actionable text (network error, TLS mismatch, server message)
+  // behind a generic "profile failed" label.
+  val errorDetail: StateFlow<String?> = MutableStateFlow(null)
+
   // True while the chain (pin → editPrefs → start → loginInteractive) is in flight.
   val busy: StateFlow<Boolean> = MutableStateFlow(false)
 
@@ -56,11 +62,13 @@ class WelcomeViewModel : IpnViewModel() {
     }
 
     busy.set(true)
+    errorDetail.set(null)
     Client(viewModelScope).clusterPin(u, v) { pinResult ->
       pinResult
           .onFailure {
             busy.set(false)
             TSLog.e("WelcomeViewModel", "clusterPin failed: ${it.message}")
+            errorDetail.set("[cluster-pin] ${it.message ?: it.javaClass.simpleName}")
             errorDialog.set(ErrorDialogType.PIN_FAILED)
           }
           .onSuccess {
@@ -78,6 +86,7 @@ class WelcomeViewModel : IpnViewModel() {
                   .onFailure {
                     busy.set(false)
                     TSLog.e("WelcomeViewModel", "login failed: ${it.message}")
+                    errorDetail.set("[login] ${it.message ?: it.javaClass.simpleName}")
                     errorDialog.set(ErrorDialogType.ADD_PROFILE_FAILED)
                   }
                   .onSuccess {
@@ -112,13 +121,16 @@ class WelcomeViewModel : IpnViewModel() {
         if (s == Ipn.State.NeedsMachineAuth) {
           busy.set(false)
           TSLog.e("WelcomeViewModel", "auth-key login landed in NeedsMachineAuth")
+          errorDetail.set("[wait] daemon landed in NeedsMachineAuth — auth key rejected or consumed")
           errorDialog.set(ErrorDialogType.ADD_PROFILE_FAILED)
           return@launch
         }
         delay(500)
       }
       busy.set(false)
-      TSLog.e("WelcomeViewModel", "timed out waiting for Running; state=${Notifier.state.value}")
+      val last = Notifier.state.value
+      TSLog.e("WelcomeViewModel", "timed out waiting for Running; state=$last")
+      errorDetail.set("[wait] 60s timeout waiting for Running; last state=$last")
       errorDialog.set(ErrorDialogType.ADD_PROFILE_FAILED)
     }
   }

@@ -51,12 +51,27 @@ fun WelcomeView(
     viewModel: WelcomeViewModel = WelcomeViewModel(),
 ) {
   val error by viewModel.errorDialog.collectAsState()
+  val errorDetail by viewModel.errorDetail.collectAsState()
   val busy by viewModel.busy.collectAsState()
 
   var invite by remember { mutableStateOf("") }
   var followCrown by remember { mutableStateOf(true) }
 
-  error?.let { ErrorDialog(type = it, action = { viewModel.errorDialog.set(null) }) }
+  error?.let {
+    // benavex fork: pass the raw exception text through so registration
+    // failures are diagnosable from the dialog itself rather than
+    // forcing a round-trip via logcat.
+    val baseMsg = stringResource(it.message)
+    val combined =
+        errorDetail?.takeIf { d -> d.isNotBlank() }?.let { d -> "$baseMsg\n\n$d" } ?: baseMsg
+    ErrorDialog(
+        title = it.title,
+        message = combined,
+        onDismiss = {
+          viewModel.errorDialog.set(null)
+          viewModel.errorDetail.set(null)
+        })
+  }
 
   Box(modifier = Modifier.fillMaxSize()) {
     Column(
