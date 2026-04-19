@@ -72,6 +72,8 @@ import com.tailscale.ipn.ui.view.IntroView
 import com.tailscale.ipn.ui.view.WelcomeView
 import com.tailscale.ipn.ui.view.LogsView
 import com.tailscale.ipn.ui.view.LoginQRView
+import com.tailscale.ipn.ui.view.MeshStatusView
+import com.tailscale.ipn.ui.view.PeerMeshDetailView
 import com.tailscale.ipn.ui.view.LoginWithAuthKeyView
 import com.tailscale.ipn.ui.view.LoginWithCustomControlURLView
 import com.tailscale.ipn.ui.view.MDMSettingsDebugView
@@ -303,6 +305,7 @@ class MainActivity : ComponentActivity() {
                   val settingsNav =
                       SettingsNav(
                           onNavigateToLogs = { navController.navigate("logs") },
+                          onNavigateToMeshStatus = { navController.navigate("meshStatus") },
                           onNavigateToAbout = { navController.navigate("about") },
                           onNavigateToDNSSettings = { navController.navigate("dnsSettings") },
                           onNavigateToSplitTunneling = { navController.navigate("splitTunneling") },
@@ -373,6 +376,21 @@ class MainActivity : ComponentActivity() {
                             PingViewModel())
                       }
                   composable("logs") { LogsView(backTo("settings")) }
+                  composable("meshStatus") {
+                    MeshStatusView(
+                        backToSettings = backTo("settings"),
+                        onNavigateToPeerDetail = { peerName ->
+                          navController.navigate("peerMeshDetail/$peerName")
+                        })
+                  }
+                  composable(
+                      "peerMeshDetail/{peerName}",
+                      arguments =
+                          listOf(navArgument("peerName") { type = NavType.StringType })) {
+                        PeerMeshDetailView(
+                            peerName = it.arguments?.getString("peerName") ?: "",
+                            backToMeshStatus = backTo("meshStatus"))
+                      }
                   composable("dnsSettings") { DNSSettingsView(backTo("settings")) }
                   composable("splitTunneling") { SplitTunnelAppPickerView(backTo("settings")) }
                   composable("tailnetLock") { TailnetLockSetupView(backTo("settings")) }

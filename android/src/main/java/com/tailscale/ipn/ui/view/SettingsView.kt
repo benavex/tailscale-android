@@ -76,6 +76,12 @@ fun SettingsView(
             AdminTextView { handler.openUri(Links.ADMIN_URL) }
           }
 
+          // benavex fork: mesh status entry. Crown / peers / per-peer
+          // detail are the first thing an operator needs when triaging
+          // a failover event, so it sits near the top.
+          Lists.SectionDivider()
+          Setting.Text(R.string.mesh_status_title, onClick = settingsNav.onNavigateToMeshStatus)
+
           Lists.SectionDivider()
           Setting.Text(
               R.string.dns_settings,
@@ -220,6 +226,8 @@ fun SettingsPreview() {
   vm.tailNetLockEnabled.set(true)
   vm.isAdmin.set(true)
   vm.managedByOrganization.set("Tails and Scales Inc.")
-  SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
-  // Note: SettingsNav parameter count unchanged; first slot is now onNavigateToLogs.
+  SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
+  // SettingsNav now has 13 slots: Logs, MeshStatus, About, DNS, SplitTunnel,
+  // TailnetLock, SubnetRouting, MDM, ManagedBy, UserSwitcher, Permissions,
+  // BackHome, BackToSettings.
 }

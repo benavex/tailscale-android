@@ -58,6 +58,39 @@
     <string name="logs_copy_all">Copy</string>
     <string name="logs_share">Share</string>
     <string name="logs_filter_hint">Filter…</string>
+
+    <!-- Mesh status (benavex fork) -->
+    <string name="mesh_status_title">Mesh status</string>
+    <string name="mesh_control_url">Active control server</string>
+    <string name="mesh_not_bound">Not bound</string>
+    <string name="mesh_no_snapshot">No mesh snapshot yet. This happens on single-server installs or before the first netmap arrives.</string>
+    <string name="mesh_crown">Crown</string>
+    <string name="mesh_crown_unknown">(unknown)</string>
+    <string name="mesh_crown_badge">crown</string>
+    <string name="mesh_crown_is_this_peer">This peer is the elected crown.</string>
+    <string name="mesh_self">This device\'s view</string>
+    <string name="mesh_peers">Peers</string>
+    <string name="mesh_peer_gone">Peer is no longer in the snapshot.</string>
+    <string name="mesh_peer_url">URL</string>
+    <string name="mesh_peer_online">Online</string>
+    <string name="mesh_peer_latency">Latency</string>
+    <string name="mesh_peer_score">Score</string>
+    <string name="mesh_peer_derp">DERP region</string>
+    <string name="mesh_peer_exit_node">Exit node</string>
+    <string name="mesh_peer_last_seen">Last seen</string>
+    <string name="mesh_peer_reliability">Reliability</string>
+    <string name="mesh_peer_history">Historic timeline</string>
+    <string name="mesh_peer_history_pending">Hourly timeline requires a per-cluster HMAC signature the app does not yet hold. The reliability rollup above covers the 1h/24h/7d/30d windows in the meantime.</string>
+    <string name="mesh_rel_uptime_1h">Uptime (1h)</string>
+    <string name="mesh_rel_uptime_24h">Uptime (24h)</string>
+    <string name="mesh_rel_uptime_7d">Uptime (7d)</string>
+    <string name="mesh_rel_uptime_30d">Uptime (30d)</string>
+    <string name="mesh_rel_uptime_life">Uptime (lifetime)</string>
+    <string name="mesh_rel_disc_24h">Disconnects (24h)</string>
+    <string name="mesh_rel_disc_life">Disconnects (lifetime)</string>
+    <string name="mesh_rel_latency_window">Latency range (1h)</string>
+    <string name="mesh_rel_thr_1h">Throughput (1h)</string>
+    <string name="mesh_rel_thr_24h">Throughput (24h)</string>
     <string name="use_ts_dns">Use Tailscale DNS</string>
     <string name="internal_debug_options">Internal debug options</string>
 

@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class SettingsNav(
-    // benavex fork: "Bug Report" replaced by the in-app Logs viewer. The
-    // nav callback name is kept generic so follow-on PRs (§10 Mesh status)
-    // can slot in alongside without another data-class rename churn.
+    // benavex fork: "Bug Report" replaced by the in-app Logs viewer.
     val onNavigateToLogs: () -> Unit,
+    // benavex fork: mesh status screen (crown, peers, per-peer detail).
+    val onNavigateToMeshStatus: () -> Unit,
     val onNavigateToAbout: () -> Unit,
     val onNavigateToDNSSettings: () -> Unit,
     val onNavigateToSplitTunneling: () -> Unit,
