@@ -57,6 +57,8 @@ class ExitNodePickerViewModel(private val nav: ExitNodePickerNav) : IpnViewModel
   val mullvadExitNodeCount: StateFlow<Int> = MutableStateFlow(0)
   val anyActive: StateFlow<Boolean> = MutableStateFlow(false)
   val shouldShowMullvadInfo: StateFlow<Boolean> = MutableStateFlow(false)
+  // benavex fork: true iff AutoExitNode == "follow-crown" in current prefs.
+  val followCrown: StateFlow<Boolean> = MutableStateFlow(false)
 
   init {
     viewModelScope.launch {
@@ -136,10 +138,21 @@ class ExitNodePickerViewModel(private val nav: ExitNodePickerNav) : IpnViewModel
                 // control server, as it wouldn't be actionable information otherwise.
                 shouldShowMullvadInfo.set(
                     netmap.SelfNode.isAdmin && prefs.ControlURL.endsWith(".tailscale.com"))
+                followCrown.set(prefs.AutoExitNode == "follow-crown")
               }
             }
           }
     }
+  }
+
+  // benavex fork: toggle AutoExitNode=follow-crown on/off from settings.
+  // Mirrors the WelcomeViewModel flow but operates post-registration.
+  fun toggleFollowCrown(enabled: Boolean, callback: (Result<Ipn.Prefs>) -> Unit) {
+    val prefsOut = Ipn.MaskedPrefs()
+    prefsOut.AutoExitNode = if (enabled) "follow-crown" else ""
+    // Clear any manual exit so the daemon can rewrite it on the next netmap tick.
+    prefsOut.ExitNodeID = ""
+    Client(viewModelScope).editPrefs(prefsOut, callback)
   }
 
   fun setExitNode(node: ExitNode) {

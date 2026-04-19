@@ -57,7 +57,22 @@ fun ExitNodePicker(
       val managedByOrganization by model.managedByOrganization.collectAsState()
       val forcedExitNodeId = MDMSettings.exitNodeID.flow.collectAsState().value.value
 
+      val followCrown by model.followCrown.collectAsState()
+
       LazyColumn(modifier = Modifier.padding(innerPadding)) {
+        // benavex fork: follow-crown override. Settings entry so re-registered
+        // devices (post DB reset) can re-enable the auto exit-node without the
+        // Welcome screen. Above the manual picker so it's the primary choice.
+        if (forcedExitNodeId == null) {
+          item(key = "followCrown") {
+            Setting.Switch(R.string.follow_crown_title, isOn = followCrown) { on ->
+              LoadingIndicator.start()
+              model.toggleFollowCrown(on) { LoadingIndicator.stop() }
+            }
+            Lists.ItemDivider()
+          }
+        }
+
         item(key = "header") {
           if (forcedExitNodeId != null) {
             Text(
