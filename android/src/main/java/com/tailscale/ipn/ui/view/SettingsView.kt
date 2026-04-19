@@ -134,6 +134,15 @@ fun SettingsView(
               subtitle = "${stringResource(id = R.string.version)} ${AppVersion.Short()}",
               onClick = settingsNav.onNavigateToAbout)
 
+          // benavex fork: self-update against the awg-latest rolling
+          // release. Compares BuildConfig.VERSION_CODE with the
+          // versionCode embedded in the GitHub release body.
+          Lists.ItemDivider()
+          Setting.Text(
+              R.string.updates_title,
+              subtitle = stringResource(R.string.updates_subtitle),
+              onClick = settingsNav.onNavigateToUpdates)
+
           // TODO: put a heading for the debug section
           if (BuildConfig.DEBUG) {
             Lists.SectionDivider()
@@ -226,8 +235,8 @@ fun SettingsPreview() {
   vm.tailNetLockEnabled.set(true)
   vm.isAdmin.set(true)
   vm.managedByOrganization.set("Tails and Scales Inc.")
-  SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
-  // SettingsNav now has 13 slots: Logs, MeshStatus, About, DNS, SplitTunnel,
-  // TailnetLock, SubnetRouting, MDM, ManagedBy, UserSwitcher, Permissions,
-  // BackHome, BackToSettings.
+  SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
+  // SettingsNav now has 14 slots: Logs, MeshStatus, Updates, About, DNS,
+  // SplitTunnel, TailnetLock, SubnetRouting, MDM, ManagedBy, UserSwitcher,
+  // Permissions, BackHome, BackToSettings.
 }

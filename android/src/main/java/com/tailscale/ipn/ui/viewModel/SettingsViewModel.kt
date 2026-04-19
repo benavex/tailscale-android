@@ -17,6 +17,9 @@ data class SettingsNav(
     val onNavigateToLogs: () -> Unit,
     // benavex fork: mesh status screen (crown, peers, per-peer detail).
     val onNavigateToMeshStatus: () -> Unit,
+    // benavex fork: in-app self-update against the awg-latest rolling
+    // release. Sidesteps the need to side-load new APKs by hand.
+    val onNavigateToUpdates: () -> Unit,
     val onNavigateToAbout: () -> Unit,
     val onNavigateToDNSSettings: () -> Unit,
     val onNavigateToSplitTunneling: () -> Unit,

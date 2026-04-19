@@ -33,6 +33,7 @@ import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.model.Netmap
 import com.tailscale.ipn.ui.notifier.HealthNotifier
 import com.tailscale.ipn.ui.notifier.Notifier
+import com.tailscale.ipn.ui.util.UpdateChecker
 import com.tailscale.ipn.ui.viewModel.AppViewModel
 import com.tailscale.ipn.ui.viewModel.AppViewModelFactory
 import com.tailscale.ipn.util.FeatureFlags
@@ -123,6 +124,11 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
         getString(R.string.taildrop_file_transfers),
         getString(R.string.notifications_delivered_when_a_file_is_received_using_taildrop),
         NotificationManagerCompat.IMPORTANCE_DEFAULT)
+    // benavex fork: reap any APKs left in cacheDir/apk by a previous
+    // self-update that was downloaded but never installed. The check
+    // screen re-downloads on demand, so there's no reason to keep
+    // them across app restarts.
+    UpdateChecker.cleanupStaleApks(this)
     createNotificationChannel(
         HealthNotifier.HEALTH_CHANNEL_ID,
         getString(R.string.health_channel_name),

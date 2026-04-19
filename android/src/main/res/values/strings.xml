@@ -94,6 +94,23 @@
     <string name="use_ts_dns">Use Tailscale DNS</string>
     <string name="internal_debug_options">Internal debug options</string>
 
+    <!-- Self-update (benavex fork) -->
+    <string name="updates_title">Check for updates</string>
+    <string name="updates_subtitle">Fetch the latest build from awg-latest</string>
+    <string name="updates_current">Installed versionCode: %1$d</string>
+    <string name="updates_check">Check now</string>
+    <string name="updates_check_again">Check again</string>
+    <string name="updates_checking">Checking…</string>
+    <string name="updates_up_to_date">You have the latest build.</string>
+    <string name="updates_available">Update available: versionCode %1$d</string>
+    <string name="updates_size_mb">Download size: %1$s MB</string>
+    <string name="updates_download">Download update</string>
+    <string name="updates_downloading">Downloading… %1$d%%</string>
+    <string name="updates_ready">Download complete. Ready to install.</string>
+    <string name="updates_install">Install</string>
+    <string name="updates_error">Update failed: %1$s</string>
+    <string name="updates_retry">Retry</string>
+
     <!-- Strings for the main screen -->
     <string name="exit_node">EXIT NODE</string>
     <string name="exit_node_offline">EXIT NODE OFFLINE</string>

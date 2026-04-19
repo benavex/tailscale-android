@@ -18,11 +18,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      versionCode: ${{ steps.vcode.outputs.code }}
     steps:
       - uses: actions/checkout@v4
         with:
           path: tailscale-android
-          fetch-depth: 1
+          # fetch-depth: 0 — need full history for `git rev-list --count HEAD`
+          # below (otherwise versionCode is stuck at BASE+1 forever).
+          fetch-depth: 0
 
       - name: Clone sibling forks for go.mod replace directives
         run: |
@@ -115,10 +119,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: awg-latest
+          VERSION_CODE: ${{ needs.build.outputs.versionCode }}
         run: |
           gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "AWG Android (rolling)" \
-            --notes "Debug APK + libtailscale AAR built with the benavex amneziawg-go engine and benavex tailscale fork. Commit ${{ github.sha }}. APK is universal (contains arm64-v8a, armeabi-v7a, x86_64)." \
+            --title "AWG Android v$VERSION_CODE (rolling)" \
+            --notes "versionCode=$VERSION_CODE
+
+Debug APK + libtailscale AAR built with the benavex amneziawg-go engine and benavex tailscale fork. Commit ${{ github.sha }}. APK is universal (contains arm64-v8a, armeabi-v7a, x86_64)." \
             artifacts/*

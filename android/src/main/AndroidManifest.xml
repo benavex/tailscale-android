@@ -15,6 +15,9 @@
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <!-- benavex fork: required so the in-app "Check for updates" flow can
+         hand the downloaded APK to PackageInstaller. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Disable input emulation on ChromeOS -->
     <uses-feature
@@ -136,5 +139,18 @@
         <meta-data
             android:name="android.content.APP_RESTRICTIONS"
             android:resource="@xml/app_restrictions" />
+
+        <!-- benavex fork: FileProvider for handing the downloaded APK to
+             PackageInstaller via a content:// URI. Android forbids
+             file:// URIs across app boundaries since N. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

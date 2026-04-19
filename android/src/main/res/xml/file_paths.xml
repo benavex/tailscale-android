@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- benavex fork: Downloaded APKs for the in-app self-update flow.
+         Lives under cacheDir so the OS will also reclaim it under
+         storage pressure if our own cleanup ever misses. -->
+    <cache-path name="apk" path="apk/" />
+</paths>

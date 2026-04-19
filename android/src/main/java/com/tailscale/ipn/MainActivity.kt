@@ -95,6 +95,7 @@ import com.tailscale.ipn.ui.view.SubnetRoutingView
 import com.tailscale.ipn.ui.view.TaildropDirView
 import com.tailscale.ipn.ui.view.TaildropDirectoryPickerPrompt
 import com.tailscale.ipn.ui.view.TailnetLockSetupView
+import com.tailscale.ipn.ui.view.UpdatesView
 import com.tailscale.ipn.ui.view.UserSwitcherNav
 import com.tailscale.ipn.ui.view.UserSwitcherView
 import com.tailscale.ipn.ui.viewModel.AppViewModel
@@ -306,6 +307,7 @@ class MainActivity : ComponentActivity() {
                       SettingsNav(
                           onNavigateToLogs = { navController.navigate("logs") },
                           onNavigateToMeshStatus = { navController.navigate("meshStatus") },
+                          onNavigateToUpdates = { navController.navigate("updates") },
                           onNavigateToAbout = { navController.navigate("about") },
                           onNavigateToDNSSettings = { navController.navigate("dnsSettings") },
                           onNavigateToSplitTunneling = { navController.navigate("splitTunneling") },
@@ -396,6 +398,7 @@ class MainActivity : ComponentActivity() {
                   composable("tailnetLock") { TailnetLockSetupView(backTo("settings")) }
                   composable("subnetRouting") { SubnetRoutingView(backTo("settings")) }
                   composable("about") { AboutView(backTo("settings")) }
+                  composable("updates") { UpdatesView(backTo("settings")) }
                   composable("mdmSettings") { MDMSettingsDebugView(backTo("settings")) }
                   composable("managedBy") { ManagedByView(backTo("settings")) }
                   composable("userSwitcher") { UserSwitcherView(userSwitcherNav) }
