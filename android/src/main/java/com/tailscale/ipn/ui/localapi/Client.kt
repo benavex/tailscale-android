@@ -58,7 +58,16 @@ private object Endpoint {
 data class ClusterPinRequest(val bootstrap_url: String, val verifier: String)
 
 @kotlinx.serialization.Serializable
-data class ClusterPinResponse(val verifier: String, val cluster_pub: String)
+data class ClusterPinResponse(
+    val verifier: String,
+    val cluster_pub: String,
+    // Phase B: SHA-256 of the cluster TLS cert's SubjectPublicKeyInfo,
+    // hex-encoded. Null/empty when the pinned server predates Phase B.
+    // The daemon persists it in clusterpin.json and tlsdial uses it to
+    // trust the self-signed cluster cert without a trust-store entry,
+    // so the APK no longer needs the cert baked in.
+    val tls_spki: String? = null
+)
 
 typealias StatusResponseHandler = (Result<IpnState.Status>) -> Unit
 
