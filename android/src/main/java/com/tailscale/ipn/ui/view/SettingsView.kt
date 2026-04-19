@@ -119,7 +119,8 @@ fun SettingsView(
           }
 
           Lists.SectionDivider()
-          Setting.Text(R.string.bug_report, onClick = settingsNav.onNavigateToBugReport)
+          // benavex fork: Bug Report replaced by in-app Logs viewer.
+          Setting.Text(R.string.logs_title, onClick = settingsNav.onNavigateToLogs)
 
           Lists.ItemDivider()
           Setting.Text(
@@ -220,4 +221,5 @@ fun SettingsPreview() {
   vm.isAdmin.set(true)
   vm.managedByOrganization.set("Tails and Scales Inc.")
   SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
+  // Note: SettingsNav parameter count unchanged; first slot is now onNavigateToLogs.
 }

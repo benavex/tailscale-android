@@ -65,12 +65,12 @@ import com.tailscale.ipn.ui.util.AndroidTVUtil
 import com.tailscale.ipn.ui.util.set
 import com.tailscale.ipn.ui.util.universalFit
 import com.tailscale.ipn.ui.view.AboutView
-import com.tailscale.ipn.ui.view.BugReportView
 import com.tailscale.ipn.ui.view.DNSSettingsView
 import com.tailscale.ipn.ui.view.ExitNodePicker
 import com.tailscale.ipn.ui.view.HealthView
 import com.tailscale.ipn.ui.view.IntroView
 import com.tailscale.ipn.ui.view.WelcomeView
+import com.tailscale.ipn.ui.view.LogsView
 import com.tailscale.ipn.ui.view.LoginQRView
 import com.tailscale.ipn.ui.view.LoginWithAuthKeyView
 import com.tailscale.ipn.ui.view.LoginWithCustomControlURLView
@@ -302,7 +302,7 @@ class MainActivity : ComponentActivity() {
                           onNavigateToWelcome = { navController.navigate("welcome") })
                   val settingsNav =
                       SettingsNav(
-                          onNavigateToBugReport = { navController.navigate("bugReport") },
+                          onNavigateToLogs = { navController.navigate("logs") },
                           onNavigateToAbout = { navController.navigate("about") },
                           onNavigateToDNSSettings = { navController.navigate("dnsSettings") },
                           onNavigateToSplitTunneling = { navController.navigate("splitTunneling") },
@@ -372,7 +372,7 @@ class MainActivity : ComponentActivity() {
                             it.arguments?.getString("nodeId") ?: "",
                             PingViewModel())
                       }
-                  composable("bugReport") { BugReportView(backTo("settings")) }
+                  composable("logs") { LogsView(backTo("settings")) }
                   composable("dnsSettings") { DNSSettingsView(backTo("settings")) }
                   composable("splitTunneling") { SplitTunnelAppPickerView(backTo("settings")) }
                   composable("tailnetLock") { TailnetLockSetupView(backTo("settings")) }

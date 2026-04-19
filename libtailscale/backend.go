@@ -161,7 +161,14 @@ func (a *App) runBackend(ctx context.Context, hardwareAttestation bool) error {
 	h := localapi.NewHandler(hc)
 	h.PermitRead = true
 	h.PermitWrite = true
-	a.localAPIHandler = h
+	// benavex fork: fork-local endpoints layered on top of the upstream
+	// localapi handler. /logtail snapshots the in-memory log ring for the
+	// in-app Logs viewer (replaces the old bugreport email flow).
+	a.localAPIHandler = forkLocalAPIMux(h)
+	// Start capturing logs into the ring as soon as the handler is live.
+	// Prior lines that happened before this call are lost, which is fine
+	// because the viewer is expected to tail from "now".
+	startLogRing()
 
 	a.ready.Done()
 

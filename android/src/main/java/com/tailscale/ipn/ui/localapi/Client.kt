@@ -50,6 +50,8 @@ private object Endpoint {
   const val TAILFS_SERVER_ADDRESS = "tailfs/fileserver-address"
   const val ENABLE_EXIT_NODE = "set-use-exit-node-enabled"
   const val CLUSTER_PIN = "cluster-pin"
+  // benavex fork: fork-local endpoint served by libtailscale.logRing.
+  const val LOG_TAIL = "logtail"
 }
 
 @kotlinx.serialization.Serializable
@@ -115,6 +117,13 @@ class Client(private val scope: CoroutineScope) {
 
   fun bugReportId(responseHandler: BugReportIdHandler) {
     post(Endpoint.BUG_REPORT, responseHandler = responseHandler)
+  }
+
+  // benavex fork: snapshot the last `max` lines of the in-memory log ring.
+  // Returns a JSON array of strings. Used by the in-app Logs viewer that
+  // replaces the removed Bug Report flow.
+  fun logTail(max: Int = 1000, responseHandler: (Result<List<String>>) -> Unit) {
+    get("${Endpoint.LOG_TAIL}?max=$max", responseHandler = responseHandler)
   }
 
   fun prefs(responseHandler: PrefsHandler) {
