@@ -121,6 +121,11 @@ func (b *backend) updateTUN(rcfg *router.Config, dcfg *dns.OSConfig) (err error)
 		if b.avoidEmptyDNS && len(nameservers) == 0 {
 			nameservers = googleDNSServers
 		}
+		// benavex fork: dump exactly what we're pushing to VpnService.Builder
+		// so the in-app log viewer makes split-tunnel DNS failures diagnosable
+		// without requiring adb logcat.
+		b.logger.Logf("updateTUN: dcfg nameservers=%v searchDomains=%v matchDomains=%v hosts=%d",
+			nameservers, dcfg.SearchDomains, dcfg.MatchDomains, len(dcfg.Hosts))
 		for _, dns := range nameservers {
 			if err := builder.AddDNSServer(dns.String()); err != nil {
 				return err
@@ -132,8 +137,13 @@ func (b *backend) updateTUN(rcfg *router.Config, dcfg *dns.OSConfig) (err error)
 			}
 		}
 		b.logger.Logf("updateTUN: set nameservers")
+	} else {
+		b.logger.Logf("updateTUN: dcfg is nil — no DNS config applied to Builder")
 	}
 
+	// benavex fork: dump routes to the log viewer.
+	b.logger.Logf("updateTUN: rcfg routes=%v localRoutes=%v localAddrs=%v",
+		rcfg.Routes, rcfg.LocalRoutes, rcfg.LocalAddrs)
 	for _, route := range rcfg.Routes {
 		// Normalize route address; Builder.addRoute does not accept non-zero masked bits.
 		route = route.Masked()
