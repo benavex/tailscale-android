@@ -69,18 +69,24 @@ fun LogsView(backToSettings: BackNavigation, model: LogsViewModel = viewModel())
             titleRes = R.string.logs_title,
             onBack = backToSettings,
             actions = {
+              // Copy honours the active filter so a focused diagnostic
+              // run can be pasted into chat without also shipping the
+              // tens of thousands of unrelated lines above it.
               TextButton(
                   onClick = {
-                    clipboard.setText(AnnotatedString(allLines.joinToString("\n")))
+                    clipboard.setText(AnnotatedString(filteredLines.joinToString("\n")))
                   }) {
                     Text(stringResource(R.string.logs_copy_all))
                   }
+              TextButton(onClick = { model.clearLogs() }) {
+                Text(stringResource(R.string.logs_clear))
+              }
               TextButton(
                   onClick = {
                     val send =
                         Intent(Intent.ACTION_SEND).apply {
                           type = "text/plain"
-                          putExtra(Intent.EXTRA_TEXT, allLines.joinToString("\n"))
+                          putExtra(Intent.EXTRA_TEXT, filteredLines.joinToString("\n"))
                           putExtra(Intent.EXTRA_SUBJECT, "tailscale logs")
                         }
                     val chooser =

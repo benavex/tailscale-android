@@ -57,6 +57,7 @@
     <string name="logs_title">Logs</string>
     <string name="logs_copy_all">Copy</string>
     <string name="logs_share">Share</string>
+    <string name="logs_clear">Clear</string>
     <string name="logs_filter_hint">Filter…</string>
 
     <!-- Mesh status (benavex fork) -->

@@ -88,6 +88,15 @@ func (r *logRing) append(line string) {
 	r.lines = append(r.lines, line)
 }
 
+// clear drops every buffered line. Used by the in-app viewer's
+// Clear button so the user can start a clean probe run without
+// scrolling past tens of thousands of earlier lines.
+func (r *logRing) clear() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.lines = r.lines[:0]
+}
+
 // snapshot returns the last n lines (or all, if n <= 0 or n > len).
 func (r *logRing) snapshot(n int) []string {
 	r.mu.Lock()
@@ -107,19 +116,23 @@ func (r *logRing) snapshot(n int) []string {
 // snapshot, not a streaming endpoint, because the android Client
 // helper calls bodyBytes() which waits for the full response.
 func serveLogRing(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "GET required", http.StatusMethodNotAllowed)
-		return
-	}
-	n := 0
-	if s := r.URL.Query().Get("max"); s != "" {
-		if v, err := strconv.Atoi(s); err == nil {
-			n = v
+	switch r.Method {
+	case http.MethodGet:
+		n := 0
+		if s := r.URL.Query().Get("max"); s != "" {
+			if v, err := strconv.Atoi(s); err == nil {
+				n = v
+			}
 		}
+		lines := theLogRing.snapshot(n)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(lines)
+	case http.MethodDelete:
+		theLogRing.clear()
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "GET or DELETE required", http.StatusMethodNotAllowed)
 	}
-	lines := theLogRing.snapshot(n)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(lines)
 }
 
 // forkLocalAPIMux wraps the upstream localapi handler so fork-local

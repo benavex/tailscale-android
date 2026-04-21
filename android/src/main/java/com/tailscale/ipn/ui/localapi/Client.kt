@@ -135,6 +135,13 @@ class Client(private val scope: CoroutineScope) {
     get("${Endpoint.LOG_TAIL}?max=$max", responseHandler = responseHandler)
   }
 
+  // benavex fork: drop every buffered line. DELETE returns 204 No Content
+  // so we don't care about the body; Result<String> matches the existing
+  // deleteProfile pattern.
+  fun clearLogTail(responseHandler: (Result<String>) -> Unit = {}) {
+    delete(Endpoint.LOG_TAIL, responseHandler = responseHandler)
+  }
+
   fun prefs(responseHandler: PrefsHandler) {
     get(Endpoint.PREFS, responseHandler = responseHandler)
   }

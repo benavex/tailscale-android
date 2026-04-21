@@ -49,6 +49,22 @@ class LogsViewModel : ViewModel() {
     filter.set(text)
   }
 
+  // Wipe the in-memory ring on the daemon side, then immediately zero
+  // the local cache so the UI reflects the clear without waiting for
+  // the next 2s poll.
+  fun clearLogs() {
+    viewModelScope.launch {
+      Client(viewModelScope).clearLogTail { result ->
+        result
+            .onSuccess {
+              lines.set(emptyList())
+              error.set(null)
+            }
+            .onFailure { error.set(it.message ?: "log clear failed") }
+      }
+    }
+  }
+
   companion object {
     private const val POLL_INTERVAL_MS = 2000L
     private const val MAX_LINES = 4096
