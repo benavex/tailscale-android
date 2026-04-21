@@ -369,6 +369,21 @@ func (a *App) newBackend(dataDir string, appCtx AppContext, store *stateStore,
 	sys.Set(ns)
 	ns.ProcessLocalIPs = false // let Android kernel handle it; VpnBuilder sets this up
 	ns.ProcessSubnets = true   // for Android-being-an-exit-node support
+	// benavex fork: pair with the UseNetstackForIP dialer callbacks below.
+	// With ProcessLocalIPs=false, netstack does not by default claim inbound
+	// packets destined for the local tailnet IP — they fall through to the
+	// kernel tun. That's correct for packets belonging to apps the kernel
+	// knows about, but breaks reply packets for the netstack-originated
+	// outbound connections we add (e.g. tsdns → exit-node DoH forward):
+	// gvisor has the registered TCP endpoint, the kernel tun does not, so
+	// SYN-ACK and every subsequent segment silently drops and the HTTP
+	// round-trip times out. CheckLocalTransportEndpoints makes netstack's
+	// shouldProcessInbound call FindTransportEndpoint for local-addressed
+	// packets, routing replies back to the registered gvisor endpoint when
+	// one exists and falling through to the kernel for everything else.
+	// Needed for Android 15 inclusive split-tunnel where OS-dial fallback
+	// is unavailable; cheap to keep on for all Android topologies.
+	ns.CheckLocalTransportEndpoints = true
 	sys.NetstackRouter.Set(true)
 
 	// benavex fork: install the netstack dialer callbacks so tailscaled's
