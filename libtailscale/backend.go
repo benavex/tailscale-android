@@ -20,7 +20,6 @@ import (
 	"sync/atomic"
 
 	"tailscale.com/drive/driveimpl"
-	"tailscale.com/envknob"
 	_ "tailscale.com/feature/condregister"
 	"tailscale.com/feature/taildrop"
 	"tailscale.com/hostinfo"
@@ -116,18 +115,6 @@ type backend struct {
 type settingsFunc func(*router.Config, *dns.OSConfig) error
 
 func (a *App) runBackend(ctx context.Context, hardwareAttestation bool) error {
-	// benavex fork: force peer traffic over DERP on Android. Workaround for
-	// the Android-15 inclusive-split-tunnel bug where magicsock's direct-UDP
-	// path silently drops data-sized packets once disco transitions off
-	// DERP — see vpn/todo.md §1b. Must be set before NewUserspaceEngine
-	// below, because magicsock.bindSocket reads this knob once at socket
-	// bind time and substitutes a block-forever UDP conn so all peer frames
-	// go via the DERP TCP-over-TLS relay instead. Tradeoff: peer-to-peer
-	// throughput caps at DERP rate (fine for DNS, SSH, web browsing; slower
-	// for large file transfers). Can be disabled at compile time by
-	// removing this line if direct-UDP is ever confirmed reliable on A15+.
-	envknob.Setenv("TS_DEBUG_ALWAYS_USE_DERP", "true")
-
 	paths.AppSharedDir.Store(a.dataDir)
 	hostinfo.SetOSVersion(a.osVersion())
 	hostinfo.SetPackage(a.appCtx.GetInstallSource())
