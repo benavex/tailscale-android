@@ -9,7 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -368,6 +370,35 @@ func (a *App) newBackend(dataDir string, appCtx AppContext, store *stateStore,
 	ns.ProcessLocalIPs = false // let Android kernel handle it; VpnBuilder sets this up
 	ns.ProcessSubnets = true   // for Android-being-an-exit-node support
 	sys.NetstackRouter.Set(true)
+
+	// benavex fork: install the netstack dialer callbacks so tailscaled's
+	// own outbound connections to tailnet peers (e.g. the exit node's DoH
+	// endpoint for DNS forwarding) stay inside netstack instead of falling
+	// through to an OS-level dial. Upstream cmd/tailscaled/netstack.go
+	// does this when onlyNetstack is true; libtailscale forgot to mirror
+	// it, which manifests on Android 15 inclusive split-tunnel as DNS
+	// "Address Not Found": the OS dial to 100.64.0.0/10 bypasses the tun
+	// because tailscaled's UID isn't in the allow list, so DoH forwards
+	// silently time out. In full-tunnel the same packet happens to round-
+	// trip through the tun and works by accident.
+	dialer.UseNetstackForIP = func(ip netip.Addr) bool {
+		_, ok := engine.PeerForIP(ip)
+		return ok
+	}
+	dialer.NetstackDialTCP = func(ctx context.Context, dst netip.AddrPort) (net.Conn, error) {
+		tcpConn, err := ns.DialContextTCP(ctx, dst)
+		if err != nil {
+			return nil, err
+		}
+		return tcpConn, nil
+	}
+	dialer.NetstackDialUDP = func(ctx context.Context, dst netip.AddrPort) (net.Conn, error) {
+		udpConn, err := ns.DialContextUDP(ctx, dst)
+		if err != nil {
+			return nil, err
+		}
+		return udpConn, nil
+	}
 	if w, ok := sys.Tun.GetOK(); ok {
 		w.Start()
 	}
